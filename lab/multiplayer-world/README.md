@@ -19,7 +19,7 @@ The GUI, keyboard handling, player drawing, and application startup are provided
 
 **Use a unique player name.** This starter uses the name as the player key; duplicate names will refer to the same circle. This is a public broker: do not send personal or confidential information.
 
-## Tasks (50 minutes)
+## Tasks
 
 ### 1. Connect 
 
