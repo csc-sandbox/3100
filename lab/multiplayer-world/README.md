@@ -21,13 +21,13 @@ The GUI, keyboard handling, player drawing, and application startup are provided
 
 ## Tasks (50 minutes)
 
-### 1. Connect (0–10 min)
+### 1. Connect 
 
 In `MyPublisher.java`, complete **TODO 1** using `client.connect()`. In `MySubscriber.java`, complete **TODO 4**: connect, then subscribe to `"#"`.
 
 **Checkpoint:** Two application instances start without an MQTT exception.
 
-### 2. Publish (10–20 min)
+### 2. Publish 
 
 In `MyPublisher.propertyChange`, complete **TODO 2**. Convert `payload` to UTF-8 bytes, construct an `MqttMessage`, and publish to `Blackboard.TOPIC`. Update `lastX` and `lastY` after success.
 
@@ -35,13 +35,13 @@ Complete **TODO 3** so the initial position is also published. The existing `"me
 
 **Checkpoint:** Pressing an arrow key publishes `NAME:X:Y`.
 
-### 3. Receive (20–30 min)
+### 3. Receive 
 
 In `MySubscriber.messageArrived`, complete **TODO 6**. Filter by topic, decode UTF-8, and schedule `addPlayerFromPayload(payload)` on the Swing event-dispatch thread using `SwingUtilities.invokeLater`.
 
 **Checkpoint:** Print a received message temporarily to verify the subscription.
 
-### 4. Update the world (30–40 min)
+### 4. Update the world 
 
 In `Blackboard.addPlayerFromPayload`, complete **TODO 5**:
 
@@ -54,21 +54,6 @@ Do not replace `PropertyChangeSupport` inheritance with a separate field.
 
 **Checkpoint:** Two application instances display both players and synchronize movements.
 
-### 5. Classroom demonstration (40–50 min)
-
-1. The instructor starts the same application with the name `Javier`.
-2. Everyone starts their application with a **unique** name.
-3. Everyone presses an arrow key so late joiners learn about existing players.
-4. Ask one student to move; verify that the circle moves on other screens.
-5. Close one application. Its circle should remain at the last known position.
-
-## Discussion
-
-- Which component is the MQTT broker? Which components are clients?
-- Why can the same application publish and subscribe?
-- Why does `#` require filtering by topic in this public-broker exercise?
-- Why might a late-joining student not see everyone immediately?
-- How does `PropertyChangeSupport` cause the GUI to repaint?
 
 ## Submission
 
