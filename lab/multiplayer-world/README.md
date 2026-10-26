@@ -6,15 +6,16 @@ Complete the MQTT communication for a multiplayer world. Every student runs the 
 
 The GUI, keyboard handling, player drawing, and application startup are provided. **Do not rewrite the GUI.** Preserve the lecture architecture, especially `Blackboard extends PropertyChangeSupport`, `MyPublisher implements PropertyChangeListener`, and `MySubscriber implements MqttCallback`.
 
-## Run
+## Setup and Run in Your IDE
 
-From `lab/multiplayer-world`:
+1. Open the `lab/multiplayer-world` directory as a **Maven project** in IntelliJ IDEA, Eclipse, or your Java IDE.
+2. Wait for Maven to load the Eclipse Paho dependency. Use **Java 17 or newer**.
+3. Open `src/main/java/edu/calpoly/csc3100/multiplayer/Main.java`.
+4. Change the constant `private static final String PLAYER_NAME = "YOUR_ID";` to your **unique Cal Poly email username** (without `@calpoly.edu`), for example `"student123"`. The instructor can use `"Javier"`.
+5. Click **Run** on the `main` method in `Main.java` (the IDE's green Run button). **No command-line arguments are needed.**
+6. Click the application window and use the arrow keys to move your circle.
 
-```sh
-mvn compile exec:java -Dexec.args="YOUR_NAME"
-```
-
-Initially the project compiles and shows the **local** player; network communication is incomplete until you finish the TODOs.
+Initially the starter compiles and displays your **local** player; MQTT networking is incomplete until you finish the TODOs. Rerun `Main` after completing each step.
 
 ## Protocol
 
@@ -26,9 +27,13 @@ Initially the project compiles and shows the **local** player; network communica
 - No JOIN, LEAVE, heartbeat, or timeout. A disconnected player remains at the last received position.
 - Players joining late only see previously connected players **after those players move again**. No retained messages.
 
-**Use a unique player name.** This starter uses the name as the player key; duplicate names will refer to the same circle. This is a public broker: do not send personal or confidential information.
+**Use a unique PLAYER_NAME constant in `Main.java`.** This starter uses the name as the player key; duplicate names will refer to the same circle. This is a public broker: do not send personal or confidential information.
 
 ## Tasks (50 minutes)
+
+### 0. Identify your player (before connecting)
+
+Set `PLAYER_NAME` in `Main.java` to your student ID. Run `Main` using your IDE's **Run** button; no arguments or username dialog are needed.
 
 ### 1. Connect (0–10 min)
 
@@ -65,8 +70,8 @@ Do not replace `PropertyChangeSupport` inheritance with a separate field.
 
 ### 5. Classroom demonstration (40–50 min)
 
-1. The instructor starts the same application with the name `Javier`.
-2. Everyone starts their application with a **unique** name.
+1. The instructor sets `PLAYER_NAME` to `"Javier"` and clicks **Run** in the IDE.
+2. Everyone sets `PLAYER_NAME` to their unique student ID and clicks **Run** in the IDE.
 3. Everyone presses an arrow key so late joiners learn about existing players.
 4. Ask one student to move; verify that the circle moves on other screens.
 5. Close one application. Its circle should remain at the last known position.
