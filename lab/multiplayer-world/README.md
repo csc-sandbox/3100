@@ -6,15 +6,6 @@ Complete the MQTT communication for a multiplayer world. Every student runs the 
 
 The GUI, keyboard handling, player drawing, and application startup are provided. **Do not rewrite the GUI.** Preserve the lecture architecture, especially `Blackboard extends PropertyChangeSupport`, `MyPublisher implements PropertyChangeListener`, and `MySubscriber implements MqttCallback`.
 
-## Run
-
-From `lab/multiplayer-world`:
-
-```sh
-mvn compile exec:java -Dexec.args="YOUR_NAME"
-```
-
-Initially the project compiles and shows the **local** player; network communication is incomplete until you finish the TODOs.
 
 ## Protocol
 
