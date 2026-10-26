@@ -1,19 +1,11 @@
 package edu.calpoly.messages;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import edu.calpoly.provided.Encryption;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -68,6 +60,28 @@ class MessageSecurityTest {
 
         assertNotEquals(message, encryptedMessage);
         assertEquals(message, Encryption.decrypt(encryptedMessage));
+    }
+
+    @Test
+    void plainAndDiagnosticProcessorsPreserveEncryptionSemanticsButOnlyDiagnosticsEmitEvent() {
+        String message = "ROBOT,1,2,3";
+        List<String> diagnosticEvents = new ArrayList<>();
+        MessageSecurityProcessor plainProcessor =
+                EncryptMessage.createSecurityProcessor(false, diagnosticEvents::add);
+        MessageSecurityProcessor diagnosticProcessor =
+                EncryptMessage.createSecurityProcessor(true, diagnosticEvents::add);
+
+        String plainEncryptedMessage = plainProcessor.process(message);
+        assertNotEquals(message, plainEncryptedMessage);
+        assertEquals(message, Encryption.decrypt(plainEncryptedMessage));
+        assertTrue(diagnosticEvents.isEmpty());
+
+        String diagnosticEncryptedMessage = diagnosticProcessor.process(message);
+        assertNotEquals(message, diagnosticEncryptedMessage);
+        assertEquals(message, Encryption.decrypt(diagnosticEncryptedMessage));
+        assertEquals(
+                List.of("Message security processing completed."),
+                diagnosticEvents);
     }
 
     @Test
