@@ -1,7 +1,5 @@
 # CSC 3100 — Multiplayer World (MQTT Lab)
 
-**Duration:** 50 minutes · **Language:** Java 17 · **Libraries:** Swing and Eclipse Paho
-
 ## Objective
 
 Complete the MQTT communication for a multiplayer world. Every student runs the **same** application; the instructor runs it too. Arrow keys move your circle. Each circle displays its player's name, and MQTT broadcasts positions to the class.
