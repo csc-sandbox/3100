@@ -1,0 +1,86 @@
+# CSC 3100 — Multiplayer World (MQTT Lab)
+
+**Duration:** 50 minutes · **Language:** Java 17 · **Libraries:** Swing and Eclipse Paho
+
+## Objective
+
+Complete the MQTT communication for a multiplayer world. Every student runs the **same** application; the instructor runs it too. Arrow keys move your circle. Each circle displays its player's name, and MQTT broadcasts positions to the class.
+
+The GUI, keyboard handling, player drawing, and application startup are provided. **Do not rewrite the GUI.** Preserve the lecture architecture, especially `Blackboard extends PropertyChangeSupport`, `MyPublisher implements PropertyChangeListener`, and `MySubscriber implements MqttCallback`.
+
+## Run
+
+From `lab/multiplayer-world`:
+
+```sh
+mvn compile exec:java -Dexec.args="YOUR_NAME"
+```
+
+Initially the project compiles and shows the **local** player; network communication is incomplete until you finish the TODOs.
+
+## Protocol
+
+- Broker: `tcp://broker.hivemq.com:1883`
+- Publish topic: `csc3100/brokerverse/world`
+- Subscribe with `#` (all broker-accessible topics); **filter** received messages to the publish topic.
+- Message: `NAME:X:Y` — for example, `Alice:120:200`.
+- Use UTF-8. Use a distinct MQTT client ID for each publisher and subscriber.
+- No JOIN, LEAVE, heartbeat, or timeout. A disconnected player remains at the last received position.
+- Players joining late only see previously connected players **after those players move again**. No retained messages.
+
+**Use a unique player name.** This starter uses the name as the player key; duplicate names will refer to the same circle. This is a public broker: do not send personal or confidential information.
+
+## Tasks (50 minutes)
+
+### 1. Connect (0–10 min)
+
+In `MyPublisher.java`, complete **TODO 1** using `client.connect()`. In `MySubscriber.java`, complete **TODO 4**: connect, then subscribe to `"#"`.
+
+**Checkpoint:** Two application instances start without an MQTT exception.
+
+### 2. Publish (10–20 min)
+
+In `MyPublisher.propertyChange`, complete **TODO 2**. Convert `payload` to UTF-8 bytes, construct an `MqttMessage`, and publish to `Blackboard.TOPIC`. Update `lastX` and `lastY` after success.
+
+Complete **TODO 3** so the initial position is also published. The existing `"me"` property-change event is the trigger for movement.
+
+**Checkpoint:** Pressing an arrow key publishes `NAME:X:Y`.
+
+### 3. Receive (20–30 min)
+
+In `MySubscriber.messageArrived`, complete **TODO 6**. Filter by topic, decode UTF-8, and schedule `addPlayerFromPayload(payload)` on the Swing event-dispatch thread using `SwingUtilities.invokeLater`.
+
+**Checkpoint:** Print a received message temporarily to verify the subscription.
+
+### 4. Update the world (30–40 min)
+
+In `Blackboard.addPlayerFromPayload`, complete **TODO 5**:
+
+1. Split the message at `:` into three fields.
+2. Parse the x and y coordinates (ignore malformed messages).
+3. Find the player by name; create it if absent, otherwise update its coordinates.
+4. Call `firePropertyChange("players", null, player)` so the existing Swing panel repaints.
+
+Do not replace `PropertyChangeSupport` inheritance with a separate field.
+
+**Checkpoint:** Two application instances display both players and synchronize movements.
+
+### 5. Classroom demonstration (40–50 min)
+
+1. The instructor starts the same application with the name `Javier`.
+2. Everyone starts their application with a **unique** name.
+3. Everyone presses an arrow key so late joiners learn about existing players.
+4. Ask one student to move; verify that the circle moves on other screens.
+5. Close one application. Its circle should remain at the last known position.
+
+## Discussion
+
+- Which component is the MQTT broker? Which components are clients?
+- Why can the same application publish and subscribe?
+- Why does `#` require filtering by topic in this public-broker exercise?
+- Why might a late-joining student not see everyone immediately?
+- How does `PropertyChangeSupport` cause the GUI to repaint?
+
+## Submission
+
+Demonstrate your working application in class. Submit a screenshot showing at least two named circles, plus the completed `MyPublisher.java`, `MySubscriber.java`, and `Blackboard.java` files as requested by your instructor.
