@@ -11,7 +11,7 @@ The GUI, keyboard handling, player drawing, and application startup are provided
 
 - Broker: `tcp://broker.hivemq.com:1883`
 - Publish topic: `csc3100/brokerverse/world`
-- Subscribe with `#` (all broker-accessible topics); **filter** received messages to the publish topic.
+- Subscribe to `csc3100/brokerverse/#` using the MQTT wildcard `#` to receive messages in the Brokerverse namespace; **filter** received messages to the publish topic.
 - Message: `NAME:X:Y` — for example, `Alice:120:200`.
 - Use UTF-8. Use a distinct MQTT client ID for each publisher and subscriber.
 - No JOIN, LEAVE, heartbeat, or timeout. A disconnected player remains at the last received position.
@@ -23,7 +23,7 @@ The GUI, keyboard handling, player drawing, and application startup are provided
 
 ### 1. Connect 
 
-In `MyPublisher.java`, complete **TODO 1** using `client.connect()`. In `MySubscriber.java`, complete **TODO 4**: connect, then subscribe to `"#"`.
+In `MyPublisher.java`, complete **TODO 1** using `client.connect()`. In `MySubscriber.java`, complete **TODO 4**: connect, then subscribe to `"csc3100/brokerverse/#"`.
 
 **Checkpoint:** Two application instances start without an MQTT exception.
 
