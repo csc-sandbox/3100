@@ -13,7 +13,7 @@ public class MyPublisher implements PropertyChangeListener {
 
     public MyPublisher() throws MqttException {
         client = new MqttClient(Blackboard.BROKER, "brokerverse-pub-" + UUID.randomUUID(), new MemoryPersistence());
-        // TODO 1: Connect the MQTT client to the broker.
+        client.connect();
     }
 
     @Override
@@ -22,12 +22,22 @@ public class MyPublisher implements PropertyChangeListener {
         Player player = Blackboard.getInstance().getMe();
         if (player == null || (player.getX() == lastX && player.getY() == lastY)) return;
         String payload = player.getId() + ":" + player.getX() + ":" + player.getY();
-        // TODO 2: Publish payload to Blackboard.TOPIC using UTF-8.
-        // Update lastX and lastY only after publishing successfully.
+            try {
+            MqttMessage message =
+                    new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
+
+            message.setRetained(false);
+            client.publish(Blackboard.TOPIC, message);
+
+            lastX = player.getX();
+            lastY = player.getY();
+        } catch (MqttException exception) {
+            System.err.println(
+                    "Could not publish position: " + exception.getMessage());
+        }
     }
 
     public void publishInitialPosition() {
-        // TODO 3: Publish the local player's initial position.
-        // Hint: reuse propertyChange with a "me" PropertyChangeEvent.
+        propertyChange(new PropertyChangeEvent(Blackboard.getInstance(), "me", null, Blackboard.getInstance().getMe()));
     }
 }

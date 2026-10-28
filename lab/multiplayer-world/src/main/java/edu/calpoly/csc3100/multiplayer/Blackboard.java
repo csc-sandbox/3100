@@ -26,8 +26,45 @@ public class Blackboard extends PropertyChangeSupport {
 
     // TODO 5: Split payload into name, x, y. Create or update a player,
     // then call firePropertyChange("players", null, player).
+
+
+
     public void addPlayerFromPayload(String payload) {
-        // Implement in the lab.
+        if (payload == null) {
+            return;
+        }
+
+        String[] fields = payload.split(":", -1);
+
+        if (fields.length != 3) {
+            return;
+        }
+
+        String name = fields[0];
+
+        if (!name.matches("[A-Za-z0-9_-]{1,24}")) {
+            return;
+        }
+
+        try {
+            int x = Integer.parseInt(fields[1]);
+            int y = Integer.parseInt(fields[2]);
+
+            Player player = players.get(name);
+
+            if (player == null) {
+                player = new Player(name, x, y, colorFor(name));
+                players.put(name, player);
+            } else {
+                player.setX(x);
+                player.setY(y);
+            }
+
+            firePropertyChange("players", null, player);
+        } catch (NumberFormatException exception) {
+            // Ignore malformed coordinates.
+        }
+
     }
 
     public void up() { move(0, -5); }

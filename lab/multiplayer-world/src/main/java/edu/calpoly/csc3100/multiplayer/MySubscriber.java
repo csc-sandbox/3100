@@ -12,16 +12,22 @@ public class MySubscriber implements MqttCallback {
     public MySubscriber() throws MqttException {
         client = new MqttClient(Blackboard.BROKER, "brokerverse-sub-" + UUID.randomUUID(), new MemoryPersistence());
         client.setCallback(this);
-        // TODO 4: Connect and subscribe to "csc3100/brokerverse/#" using the MQTT wildcard.
+        client.connect();
+        client.subscribe("csc3100/brokerverse/#");
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        // TODO 6: Ignore messages not on Blackboard.TOPIC.
-        // Decode UTF-8 payload and pass it to
-        // Blackboard.getInstance().addPlayerFromPayload(payload).
-        // Schedule the Blackboard update on Swing's event-dispatch thread:
-        // SwingUtilities.invokeLater(() -> ...);
+        if (!Blackboard.TOPIC.equals(topic)) return;
+
+        String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+
+
+        System.out.println("Subscriber received: " + payload);
+
+        SwingUtilities.invokeLater(() -> Blackboard.getInstance().addPlayerFromPayload(payload));
+
+        
     }
 
     @Override public void deliveryComplete(IMqttDeliveryToken token) {}
