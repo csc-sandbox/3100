@@ -77,7 +77,7 @@ public class ActivityDisplay implements PropertyChangeListener {
             frame = new JFrame("Activity Display");
             frame.addWindowListener(new ActivityWindowListener(this));
             frame.add(panel);
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setLocationRelativeTo(null); // center the window on the screen
             frame.setVisible(true);
