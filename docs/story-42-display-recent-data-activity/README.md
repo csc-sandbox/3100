@@ -50,5 +50,44 @@ Verified behavior:
 6) When a source stops producing data, its count decreases as messages become older than 60 seconds.
 7) When a source resumes sending data, its count increases again.
 
-// UML
-docs/42-display-recent-data-activity/uml.png
+
+
+Spring 3 ----- OBSERVER REFACTORING ------
+Our original design was based on 
+- receiveing message, recording timestamp, and even using it and sharing it (DisplayDataActivity).
+- Duplicating the classification logic and the timer and message recieving loop, and display the Blackboard activity events.
+
+NOW REFACTORING CONTAINS AND AIMS TO ----->
+- Mantaining the existing 60-second message count window (ActivityTracker).
+- Preserving the existing activity classification (ActivityClassifier)
+- Provides the existing property-Change notificiations mechanism. (Blackboard)
+- ActivityWindowListener: Removes the display's subscription on the Swing Event thread
+- Implementing PropertyChangeListener (Subscriber) to Blackboard.ACTIVITY_STATE that queues observed label updates
+
+---- BUILD and RUN ------
+
+$ mvn test-compile
+
+then;
+
+run the test calpoly.test.spring1.TestMonitorData
+
+and then in a diff terminal
+
+run mvn calpoly.monitor.DisplayDataActivity
+
+
+
+--- TESTING -----
+Run mvn BlackboardActivityDisplayTest.java test
+
+
+
+---- FINALLY -----
+
+$ mvn clean verify
+
+
+
+## UML
+![Activity display Observer class diagram](uml.png)
