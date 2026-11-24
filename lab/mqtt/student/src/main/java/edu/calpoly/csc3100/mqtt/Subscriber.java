@@ -22,14 +22,19 @@ public final class Subscriber implements MqttCallback {
 
     public void connect() throws MqttException {
         // TODO 5: Create an MqttClient with its OWN unique ID and MemoryPersistence.
+	String clientId = UUID.randomUUID().toString();
+	client = new MqttClient(BROKER, clientId, new MemoryPersistence());
         // TODO 6: Register this instance as callback: client.setCallback(this).
+	client.setCallback(this);
         // TODO 7: Connect with a clean session.
-        throw new UnsupportedOperationException("TODO: Subscriber.connect");
+	MqttConnectOptions options = new MqttConnectOptions();
+	options.setCleanSession(true);
+	client.connect(options);
     }
 
     public void subscribe() throws MqttException {
         // TODO 8: Subscribe to prefix + "challenge" with QoS 1.
-        throw new UnsupportedOperationException("TODO: Subscriber.subscribe");
+	client.subscribe(prefix + "challenge", QOS);
     }
 
     @Override
@@ -37,8 +42,18 @@ public final class Subscriber implements MqttCallback {
         String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
         System.out.println("Received: " + payload);
         // TODO 9: Parse the payload in the form "id:key".
+	int separator = payload.indexOf(':');
         // TODO 10: Ignore challenges addressed to other students.
+	String id = payload.substring(0, separator);
+	String key = payload.substring(separator + 1);
+
+	if (!id.equals(studentId)) {
+		return;
+	}
+
         // TODO 11: Call publisher.sendAck(key) for this student's challenge.
+	publisher.sendAck(key);
+
         // Remember: all students share the same challenge topic.
     }
 
