@@ -1,10 +1,11 @@
 package edu.calpoly.csc3100.multiplayer;
 
 import javax.swing.*;
-import java.awt.*;
-import java.util.UUID;
 
 public class Main extends JFrame {
+    // TODO 0: Replace YOUR_ID with your unique student ID (or instructor name).
+    private static final String PLAYER_NAME = "YOUR_ID";
+
     public Main() {
         MyPanel panel = new MyPanel();
         add(panel);
@@ -20,9 +21,9 @@ public class Main extends JFrame {
     }
 
     public static void main(String[] args) throws Exception {
-        String name = args.length > 0 ? args[0] : JOptionPane.showInputDialog(null, "Your player name:");
+        String name = PLAYER_NAME;
         if (name == null || !name.matches("[A-Za-z0-9_-]{1,24}")) {
-            System.err.println("Use a name of 1–24 letters, digits, underscores, or hyphens.");
+            System.err.println("Set PLAYER_NAME in Main.java to 1–24 letters, digits, underscores, or hyphens.");
             return;
         }
         SwingUtilities.invokeAndWait(Main::new);

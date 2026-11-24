@@ -6,6 +6,16 @@ Complete the MQTT communication for a multiplayer world. Every student runs the 
 
 The GUI, keyboard handling, player drawing, and application startup are provided. **Do not rewrite the GUI.** Preserve the lecture architecture, especially `Blackboard extends PropertyChangeSupport`, `MyPublisher implements PropertyChangeListener`, and `MySubscriber implements MqttCallback`.
 
+## Setup and Run in Your IDE
+
+1. Open the `lab/multiplayer-world` directory as a **Maven project** in IntelliJ IDEA, Eclipse, or your Java IDE.
+2. Wait for Maven to load the Eclipse Paho dependency. Use **Java 17 or newer**.
+3. Open `src/main/java/edu/calpoly/csc3100/multiplayer/Main.java`.
+4. Change the constant `private static final String PLAYER_NAME = "YOUR_ID";` to your **unique Cal Poly email username** (without `@calpoly.edu`), for example `"student123"`. The instructor can use `"Javier"`.
+5. Click **Run** on the `main` method in `Main.java` (the IDE's green Run button). **No command-line arguments are needed.**
+6. Click the application window and use the arrow keys to move your circle.
+
+Initially the starter compiles and displays your **local** player; MQTT networking is incomplete until you finish the TODOs. Rerun `Main` after completing each step.
 
 ## Protocol
 
@@ -17,17 +27,21 @@ The GUI, keyboard handling, player drawing, and application startup are provided
 - No JOIN, LEAVE, heartbeat, or timeout. A disconnected player remains at the last received position.
 - Players joining late only see previously connected players **after those players move again**. No retained messages.
 
-**Use a unique player name.** This starter uses the name as the player key; duplicate names will refer to the same circle. This is a public broker: do not send personal or confidential information.
+**Use a unique PLAYER_NAME constant in `Main.java`.** This starter uses the name as the player key; duplicate names will refer to the same circle. This is a public broker: do not send personal or confidential information.
 
 ## Tasks
 
-### 1. Connect 
+### 0. Identify your player (before connecting)
+
+Set `PLAYER_NAME` in `Main.java` to your student ID. Run `Main` using your IDE's **Run** button; no arguments or username dialog are needed.
+
+### 1. Connect
 
 In `MyPublisher.java`, complete **TODO 1** using `client.connect()`. In `MySubscriber.java`, complete **TODO 4**: connect, then subscribe to `"csc3100/brokerverse/#"`.
 
 **Checkpoint:** Two application instances start without an MQTT exception.
 
-### 2. Publish 
+### 2. Publish
 
 In `MyPublisher.propertyChange`, complete **TODO 2**. Convert `payload` to UTF-8 bytes, construct an `MqttMessage`, and publish to `Blackboard.TOPIC`. Update `lastX` and `lastY` after success.
 
@@ -35,13 +49,13 @@ Complete **TODO 3** so the initial position is also published. The existing `"me
 
 **Checkpoint:** Pressing an arrow key publishes `NAME:X:Y`.
 
-### 3. Receive 
+### 3. Receive
 
 In `MySubscriber.messageArrived`, complete **TODO 6**. Filter by topic, decode UTF-8, and schedule `addPlayerFromPayload(payload)` on the Swing event-dispatch thread using `SwingUtilities.invokeLater`.
 
 **Checkpoint:** Print a received message temporarily to verify the subscription.
 
-### 4. Update the world 
+### 4. Update the world
 
 In `Blackboard.addPlayerFromPayload`, complete **TODO 5**:
 
@@ -53,7 +67,6 @@ In `Blackboard.addPlayerFromPayload`, complete **TODO 5**:
 Do not replace `PropertyChangeSupport` inheritance with a separate field.
 
 **Checkpoint:** Two application instances display both players and synchronize movements.
-
 
 ## Submission
 
