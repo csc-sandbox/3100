@@ -39,7 +39,7 @@ public class TestMessageCSV {
     private static void testProvidedFile() {
         try {
             Path file = Path.of("src", "test", "resources", "sprint2", "messages-test.csv");
-            List<String> messages = RetrieveMessages.readMessages(file);
+            List<String> messages = new RetrieveMessages().readMessages(file);
 
             check(messages.size() == 3,
                     "provided file contains three messages");
@@ -64,7 +64,7 @@ public class TestMessageCSV {
                     "2026-09-25T08:10:00Z",
                     "GAZE,0.42,0.71");
 
-            List<String> messages = RetrieveMessages.readMessages(file);
+            List<String> messages = new RetrieveMessages().readMessages(file);
 
             check(messages.size() == 1,
                     "writes one CSV record");

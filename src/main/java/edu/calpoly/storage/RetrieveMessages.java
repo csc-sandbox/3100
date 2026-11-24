@@ -18,37 +18,30 @@ import org.apache.commons.csv.CSVRecord;
  * This class is responsible for retrieving messages from storage and sending them through a Broker.
  * 
  * @author Anay Nagar (ReeledWarrior14)
- * @version 1.1 (9/29/2026)
+ * @version 2.0 (10/23/2026)
  */
-public class RetrieveMessages {
+public class RetrieveMessages implements MessageRetrievalInterface {
     private static final int DEFAULT_PORT = 5000;
     private static final String DEFAULT_HOST = "localhost";
     private static final Path DEFAULT_DATA_FILE = Path.of("data", "messages.csv");
 
-    private Path dataFile;
-    private String host = "localhost";
-    private int port;
-    private List<String> messages = new ArrayList<>();
-
-    public RetrieveMessages(Path dataFile, String host, int port) {
-        this.dataFile = dataFile;
-        this.host = host;
-        this.port = port;
-    }
+    protected List<String> messages = new ArrayList<>();
 
     public static void main(String[] args) {
-        RetrieveMessages retriever = new RetrieveMessages(DEFAULT_DATA_FILE, DEFAULT_HOST, DEFAULT_PORT);
-        retriever.readFile();
+        RetrieveMessages retriever = new RetrieveMessages();
+        MessageRetrievalInterface diagnosticRetriever = new RetrieveMessagesDiagnostics(retriever);
+        diagnosticRetriever.readFile(DEFAULT_DATA_FILE);
 
         if (retriever.messages.isEmpty()) {
             System.err.println("No messages to retrieve.");
             return;
         }
 
-        retriever.sendMessages();
+        Broker broker = new Broker(DEFAULT_HOST, DEFAULT_PORT);
+        diagnosticRetriever.sendMessages(broker);
     }
 
-    private void readFile() {
+    public void readFile(Path dataFile) {
         try {
             messages = readMessages(dataFile);
         } catch (IOException e) {
@@ -56,10 +49,8 @@ public class RetrieveMessages {
         }
     }
 
-    private void sendMessages() {
+    public void sendMessages(Broker broker) {
         try {
-            Broker broker = new Broker(host, port);
-
             for (String message : messages) {
                 broker.send(message);
             }
@@ -68,8 +59,7 @@ public class RetrieveMessages {
         }
     }
 
-    public static List<String> readMessages(Path file)
-            throws IOException {
+    public List<String> readMessages(Path file) throws IOException {
 
         List<String> result = new ArrayList<>();
 
