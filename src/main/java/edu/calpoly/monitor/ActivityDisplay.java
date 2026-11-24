@@ -4,6 +4,10 @@ import javax.swing.JFrame; // we need the window
 import javax.swing.JPanel; // we need the container 
 import javax.swing.JLabel; // we need make it visible
 import java.awt.GridLayout; // we also need to place some layout using libraries
+import edu.calpoly.provided.Blackboard;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
 
 /**
  * DisplayDataActivity -> Must receives the messages adn also has the tracker included
@@ -19,6 +23,8 @@ import java.awt.GridLayout; // we also need to place some layout using libraries
 
 
  /**
+  *  * Observes supported Blackboard activity-state changes and schedules
+ * system-state label updates on the Swing Event Dispatch Thread.
   * ActivityDisplay creates and manages the Swing window 
   * that shows the current 60-second message counts for 
   * - Robot, 
@@ -29,11 +35,14 @@ import java.awt.GridLayout; // we also need to place some layout using libraries
   * @author Diego Martinez Parra (sp4msvwnz)
   * @version version 1.0 (2026-09-23)
   * ActivityDisplay
+ 
   */
 
  
-public class ActivityDisplay {
+public class ActivityDisplay implements PropertyChangeListener {
     private final JFrame frame;
+    private boolean observing;
+    private long subscriptionVersion;
     
     // four label fields (objects)
     private final JLabel robotCountLabel = new JLabel("Robot: 0 Messages"); // ROBOT
@@ -52,33 +61,43 @@ public class ActivityDisplay {
 
 
     // CONSTRUCTOR
-    public ActivityDisplay() {
-        frame = new JFrame("Recent Data Activity");
+    public ActivityDisplay() {this(true);} // default constructor, calls the other constructor with true
 
-        int rows = 5;
-        int columns = 1;
-        
-        // Create a panel
-
-        JPanel panel = new JPanel(new GridLayout(rows, columns));
+    public ActivityDisplay(boolean showWindow) {
+    
+        JPanel panel = new JPanel(new GridLayout(0, 1));
         panel.add(timeWindowLabel);
         panel.add(robotCountLabel);
         panel.add(gazeCountLabel);
         panel.add(affectCountLabel);
         panel.add(lidarCountLabel);
         panel.add(systemStateLabel);
-        frame.add(panel);
-        // we have to tell them to close the application
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // when the user closes the window
-        // set the size
-        frame.pack();
+        
+        if(showWindow) {
+            frame = new JFrame("Activity Display");
+            frame.addWindowListener(new ActivityWindowListener(this));
+            frame.add(panel);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.pack();
+            frame.setLocationRelativeTo(null); // center the window on the screen
+            frame.setVisible(true);
+        } else {
+            frame = null;
+        }
 
-        // center the frame.
+        
+    }
+    // SECOND CONSTRUCTOR
+    /**
+     * Stops observation and schedules disposal of the display window.
+     */
+    public void dispose() {
+        unsubscribeFromActivity();
 
-        frame.setLocationRelativeTo(null);
-
-        // set it visible
-        frame.setVisible(true);
+        if (frame != null) {
+            SwingUtilities.invokeLater(() -> frame.dispose());
+        }
+        
     }
 
     // FOR #76 I NEED TO ADD A METHOD THAT WILL BE PUBLIC TO COUNT OR UPDATE COUNTS
@@ -92,5 +111,76 @@ public class ActivityDisplay {
 
     public void updateSystemState(String state) {
      systemStateLabel.setText("System State: " + state);
+    }
+
+        /**
+     * Starts observing Blackboard activity-state changes.
+     * Repeated calls do not register duplicate listeners.
+     */
+    public synchronized void subscribeToActivity() {
+        if (observing) {
+            return;
+        }
+
+        subscriptionVersion++;
+        observing = true;
+        Blackboard.subscribe(Blackboard.ACTIVITY_STATE, this);
+    }
+
+    /**
+     * Stops observing activity changes and invalidates queued updates.
+     */
+    public synchronized void unsubscribeFromActivity() {
+        observing = false;
+        subscriptionVersion++;
+        Blackboard.unsubscribe(Blackboard.ACTIVITY_STATE, this);
+    }
+
+   public String getSystemStateText() {
+        return systemStateLabel.getText();
+    }
+    public String[] getCountTexts() {
+        return new String[] {
+            robotCountLabel.getText(),
+            gazeCountLabel.getText(),
+            affectCountLabel.getText(),
+            lidarCountLabel.getText()
+        };
+    }
+     
+    @Override
+    public synchronized void propertyChange(PropertyChangeEvent event) {
+        if (!observing) {
+            return;
+        }
+
+        if (!Blackboard.ACTIVITY_STATE.equals(event.getPropertyName())) {
+            return;
+        }
+
+        if (!(event.getNewValue() instanceof String state)) {
+            return;
+        }
+
+        boolean supported = switch (state) {
+            case "IDLE", "ACTIVE", "NO_ACTIVITY",
+                 "NORMAL", "HIGH_ACTIVITY" -> true;
+            default -> false;
+        };
+
+        if (!supported) {
+            return;
+        }
+
+                long eventVersion = subscriptionVersion;
+
+        SwingUtilities.invokeLater(() -> {
+            synchronized (ActivityDisplay.this) {
+                if (observing && subscriptionVersion == eventVersion) {
+                    updateSystemState(state);
+                }
+            }
+        });
+
     }
 }

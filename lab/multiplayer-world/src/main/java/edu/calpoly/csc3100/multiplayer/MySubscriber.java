@@ -12,7 +12,7 @@ public class MySubscriber implements MqttCallback {
     public MySubscriber() throws MqttException {
         client = new MqttClient(Blackboard.BROKER, "brokerverse-sub-" + UUID.randomUUID(), new MemoryPersistence());
         client.setCallback(this);
-        // TODO 4: Connect and subscribe using the MQTT wildcard "#".
+        // TODO 4: Connect and subscribe to "csc3100/brokerverse/#" using the MQTT wildcard.
     }
 
     @Override
