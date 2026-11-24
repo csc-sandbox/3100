@@ -1,6 +1,9 @@
 // TASK #73: IMPLEMENT MESSAGE RECEPTION AND CLASSIFICATION
 /** 
  * RECIPE:
+ *  * Receives and validates monitoring messages, records activity timestamps,
+ * and periodically refreshes recent message counts.
+ * Publishes activity classifications to Blackboard for subscribed observers.
  * Receives msg through the course-provided Broker Class
  * Then it would identify the data source represneted by each msg
  * Then expected message format will follow:
@@ -12,6 +15,9 @@
 package edu.calpoly.monitor;
 import edu.calpoly.provided.Broker;
 import javax.swing.Timer;
+import edu.calpoly.provided.Blackboard;
+import javax.swing.SwingUtilities;
+import java.util.concurrent.FutureTask;
 
 // SubTasl #73(b): Receive msg from the system
 
@@ -30,41 +36,26 @@ import javax.swing.Timer;
 
 
 public class DisplayDataActivity {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Broker broker = new Broker("localhost", 5000); // Creates a broker to received msg from the local services
         // NOW CONNECT TO THE ACTIVITYTRACKER
         ActivityTracker tracker = new ActivityTracker();
 
         // ADD THE BEHAVIOR OF ACTIVITY DISPLAY
-        ActivityDisplay display = new ActivityDisplay();
-
-        Timer refreshTimer = new Timer(1000, event -> {
-            int robotCount = tracker.getRecentCount("ROBOT");
-            int gazeCount = tracker.getRecentCount("GAZE");
-            int affectCount = tracker.getRecentCount("AFFECT");
-            int lidarCount = tracker.getRecentCount("LIDAR");
-
-            display.updateCounts(
-                    robotCount,
-                    gazeCount,
-                    affectCount,
-                    lidarCount
-            );
-
-            int totalCount =
-                    robotCount + gazeCount + affectCount + lidarCount;
-
-            double messageRate = totalCount / 60.0;
-            double secondsSinceLastMessage =
-                    totalCount > 0 ? 0.0 : 60.0;
-
-            String state = ActivityClassifier.classify(
-                    messageRate,
-                    secondsSinceLastMessage
-            );
-
-            display.updateSystemState(state);
+            FutureTask<ActivityDisplay> createDisplay = new FutureTask<>(() -> {
+            ActivityDisplay activityDisplay = new ActivityDisplay();
+            activityDisplay.subscribeToActivity();
+            return activityDisplay;
         });
+
+        SwingUtilities.invokeAndWait(createDisplay);
+
+        ActivityDisplay display = createDisplay.get();
+
+
+        Timer refreshTimer = new Timer(
+                1000,
+                event -> refreshActivity(tracker, display));
 
         refreshTimer.start();
         
@@ -132,34 +123,47 @@ public class DisplayDataActivity {
                     break;
             }
 
-            int totalCount =
-                    tracker.getRecentCount("ROBOT")
-                            + tracker.getRecentCount("GAZE")
-                            + tracker.getRecentCount("AFFECT")
-                            + tracker.getRecentCount("LIDAR");
-
-            double messageRate = totalCount / 60.0;
-
-            double secondsSinceLastMessage =
-                    totalCount > 0 ? 0.0 : 60.0;
-
-            String state = ActivityClassifier.classify(
-                    messageRate,
-                    secondsSinceLastMessage);
-
-            display.updateSystemState(state);
+            refreshActivity(tracker, display); // then call the refreshActivity method to update the display
 
             // then display the msg
             System.out.println("Received: " + msg); //concadination
             
         }
 
+
+
         
         
         
 
     }
+    
+    private static synchronized void refreshActivity(ActivityTracker tracker, ActivityDisplay display) {
+        int robotCount = tracker.getRecentCount("ROBOT");
+        int gazeCount = tracker.getRecentCount("GAZE");
+        int affectCount = tracker.getRecentCount("AFFECT");
+        int lidarCount = tracker.getRecentCount("LIDAR");
 
+        int totalCount =
+                robotCount + gazeCount + affectCount + lidarCount;
+
+        double messageRate = totalCount / 60.0;
+        double secondsSinceLastMessage =
+                totalCount > 0 ? 0.0 : 60.0;
+
+        String state = ActivityClassifier.classify(
+                messageRate,
+                secondsSinceLastMessage);
+        
+        SwingUtilities.invokeLater(() -> {display.updateCounts(
+                    robotCount,
+                    gazeCount,
+                    affectCount,
+                    lidarCount);
+        });
+
+        Blackboard.put(Blackboard.ACTIVITY_STATE, state);
+    }
 
 }
 
